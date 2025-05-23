@@ -1,6 +1,6 @@
 package com.rockthejvm.part2oop
 
-object BookPublisher {
+object ClassBasics {
   class Author(val firstName: String, val lastName: String, val yob: Int) {
     def fullName(): String = s"$firstName $lastName"
   }
