@@ -19,7 +19,7 @@ abstract class Llist[A] {
   def tail: Llist[A]
   def isEmpty: Boolean
   def add(element: A): Llist[A] = {
-    new LlistImpl(element, this)
+    LlistImpl(element, this)
   }
   def map[B](transformer: Transformer[A,B]): Llist[B]
   def filter(predicate: Predicate[A]) : Llist[A]
@@ -27,7 +27,7 @@ abstract class Llist[A] {
 }
 
 // Consumers have to be careful
-class EmptyList[A]() extends Llist[A]{
+case class EmptyList[A]() extends Llist[A]{
   override def isEmpty: Boolean = true
   override def head:A = throw new NoSuchElementException
   override def tail:Llist[A] = throw new NoSuchElementException
@@ -37,9 +37,7 @@ class EmptyList[A]() extends Llist[A]{
   override def flatMap[B](transformer: Transformer[A, Llist[B]]): Llist[B] = throw new NoSuchMethodException
 }
 
-class LlistImpl[A](headVal: A, tailVal: Llist[A]) extends Llist[A] {
-  def head: A = headVal
-  def tail: Llist[A] = tailVal
+case class LlistImpl[A](head: A, tail: Llist[A]) extends Llist[A] {
   def isEmpty: Boolean = false
 
   override def filter(predicate: Predicate[A]): Llist[A] = {
@@ -52,7 +50,7 @@ class LlistImpl[A](headVal: A, tailVal: Llist[A]) extends Llist[A] {
       filterHelper(currNode.tail, if (predicate.test(currNode.head)) currFilteredList.add(currNode.head) else currFilteredList)
     }
 
-    reverseList(filterHelper(this, new EmptyList[A]()), new EmptyList[A]())
+    reverseList(filterHelper(this, EmptyList[A]()), EmptyList[A]())
   }
 
   override def map[B](transformer: Transformer[A,B]): Llist[B] = {
@@ -118,6 +116,10 @@ class EvenPredicate extends Predicate[Int] {
   override def test(valToTest: Int): Boolean = ((valToTest % 2) == 0)
 }
 
+class Divideby5Predicate extends Predicate[Int] {
+  override def test(valToTest: Int): Boolean = ((valToTest % 5) == 0)
+}
+
 class StringToIntTransformer extends Transformer[String, Int]{
   override def transform(value: String): Int = value.toInt
 }
@@ -130,7 +132,16 @@ class PlusOneTransformer extends Transformer[Int, Llist[Int]]{
   override def transform(value: Int): Llist[Int] = new EmptyList[Int]().add(value+1).add(value)
 
 }
+
 object LlistTest {
+  def find[A](list: Llist [A], predicate: Predicate[A]): A = {
+    if (list.isEmpty)
+      throw new RuntimeException("Element Not found")
+    if (predicate.test(list.head))
+      return list.head
+    find(list.tail, predicate)
+  }
+
   def main(args: Array[String]): Unit = {
     var myList: Llist[Int] = new EmptyList[Int]()
     println("Created a new list")
@@ -158,6 +169,11 @@ object LlistTest {
     //testing flatmap
     var plusOne = myList_v2.flatMap(new PlusOneTransformer())
     println("Plus One transformer: "+ plusOne.toString())
+
+    // testing exceptions
+    println(find(myList_v2, new EvenPredicate))
+    println(find(myList_v2, new Divideby5Predicate))
+
   }
 }
 
