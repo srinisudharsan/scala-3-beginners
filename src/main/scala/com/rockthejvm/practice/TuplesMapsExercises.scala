@@ -33,6 +33,7 @@ object TuplesMapsExercises {
   }
 
   def peopleWith0Friends: Int = socialNetwork.count((k,v) => v.isEmpty)
+  def nFriends(person: String): Int = if (socialNetwork.contains(person)) socialNetwork(person).size else -1
   def maxFriends(): Set[String] = {
     var peopleToNumFriends = socialNetwork.map((k, v) => (k, v.size))
     var maxFriends = 0
@@ -40,9 +41,10 @@ object TuplesMapsExercises {
     for{
       personToNumFriends <- peopleToNumFriends
     }yield{
-      if (personToNumFriends._2 > maxFriends)
+      if (personToNumFriends._2 > maxFriends) {
+        maxFriends = personToNumFriends._2
         peopleWithMaxFriends = Set(personToNumFriends._1)
-      else if (personToNumFriends._2 == maxFriends)
+      } else if (personToNumFriends._2 == maxFriends)
         peopleWithMaxFriends  = peopleWithMaxFriends + personToNumFriends._1
     }
     peopleWithMaxFriends
@@ -55,7 +57,7 @@ object TuplesMapsExercises {
                                   person2: String, person2RunningSet: Set[String],
                                   visitedPersons: Set[String]): Boolean = {
       var visitedPersonsNew:Set[String] = visitedPersons + person1 + person2
-      if(socialNetwork(person1).size == 0 || socialNetwork(person2).size == 0)
+      if(socialNetwork(person1).isEmpty || socialNetwork(person2).isEmpty)
         return false
       if (socialNetwork(person1).contains(person2))
         return true
@@ -87,9 +89,11 @@ object TuplesMapsExercises {
     addFriend("Rag", "Deep")
     addFriend("Rag", "Sar")
     addPerson("Sat")
+    addFriend("Deep", "Nid")
+    println("Nfriends" + nFriends("Rag"))
     println("MaxFriends" + maxFriends())
     println("0 Friends" + peopleWith0Friends)
-    println(hasSocialConnection("Sudh", "Deep"))
+    println(hasSocialConnection("Sudh", "Nid"))
     println(hasSocialConnection("Sudh", "Sat"))
 
   }
